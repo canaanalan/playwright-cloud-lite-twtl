@@ -10,9 +10,9 @@ This is a work in progress, but the current MVP already supports the core loop: 
 
 ## Why I Built This
 
-Mostly for fun :D I like PLaywright better but CYpress Cloud is my favorite part of Cypress, so I wanted to try to build my own pretty dashboard for Playwright. My plan is to bake into a live server so it can actually be used by anyone. 
+Mostly for fun :D I like PLaywright better but Cypress Cloud is my favorite part of Cypress, so I wanted to try to build my own pretty dashboard for Playwright. My plan is to bake into a live server so it can actually be used by anyone. 
 
-It is nowhere near the full enterprise test platform YET. It is a practical "cloud lite" slice FOR NOW.
+It is nowhere near the full enterprise test platform YET. It is a practical "cloud lite" slice FOR NOW. :P
 
 ## What It Does
 
