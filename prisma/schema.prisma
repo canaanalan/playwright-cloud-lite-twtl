@@ -1,0 +1,112 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum RunStatus {
+  PASSED
+  FAILED
+  FLAKY
+  TIMED_OUT
+  INTERRUPTED
+}
+
+enum TestStatus {
+  PASSED
+  FAILED
+  FLAKY
+  SKIPPED
+  TIMED_OUT
+}
+
+enum ArtifactType {
+  SCREENSHOT
+  VIDEO
+  TRACE
+  LOG
+}
+
+model Run {
+  id          String    @id @default(cuid())
+  status      RunStatus
+  projectName String
+  branch      String?
+  commitSha   String?
+  ciProvider  String?
+  ciRunUrl    String?
+  startedAt   DateTime?
+  endedAt     DateTime?
+  durationMs  Int
+  passedCount Int       @default(0)
+  failedCount Int       @default(0)
+  skippedCount Int      @default(0)
+  retriedCount Int      @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tests TestCase[]
+
+  @@index([createdAt])
+  @@index([status])
+}
+
+model TestCase {
+  id          String     @id @default(cuid())
+  runId       String
+  title       String
+  file        String?
+  browserName String?
+  status      TestStatus
+  durationMs  Int
+  retryCount  Int        @default(0)
+  isFlaky     Boolean    @default(false)
+  errorMessage String?
+  createdAt   DateTime   @default(now())
+
+  run       Run           @relation(fields: [runId], references: [id], onDelete: Cascade)
+  attempts  TestAttempt[]
+  artifacts Artifact[]
+
+  @@index([runId])
+  @@index([status])
+  @@index([isFlaky])
+}
+
+model TestAttempt {
+  id           String   @id @default(cuid())
+  testCaseId   String
+  attemptIndex Int
+  status       TestStatus
+  durationMs   Int
+  errorMessage String?
+  startedAt    DateTime?
+  createdAt    DateTime @default(now())
+
+  testCase TestCase @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+
+  @@unique([testCaseId, attemptIndex])
+  @@index([testCaseId])
+}
+
+model Artifact {
+  id         String       @id @default(cuid())
+  testCaseId String
+  type       ArtifactType
+  path       String
+  label      String?
+  createdAt  DateTime     @default(now())
+
+  testCase TestCase @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+
+  @@index([testCaseId])
+  @@index([type])
+}

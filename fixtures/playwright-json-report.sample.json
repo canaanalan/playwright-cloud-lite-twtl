@@ -1,0 +1,123 @@
+{
+  "config": {
+    "rootDir": "/Users/example/checkout-service"
+  },
+  "suites": [
+    {
+      "title": "checkout",
+      "file": "tests/checkout/payment-form.spec.ts",
+      "specs": [
+        {
+          "title": "payment form preserves cardholder name after validation error",
+          "file": "tests/checkout/payment-form.spec.ts",
+          "tests": [
+            {
+              "projectName": "chromium",
+              "status": "failed",
+              "results": [
+                {
+                  "retry": 0,
+                  "status": "failed",
+                  "duration": 16400,
+                  "startTime": "2026-06-11T12:15:28.000Z",
+                  "error": {
+                    "message": "Cardholder name input was cleared after validation error."
+                  },
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/artifacts/playwright-json/payment-form-failure.svg"
+                    }
+                  ]
+                },
+                {
+                  "retry": 1,
+                  "status": "failed",
+                  "duration": 14800,
+                  "startTime": "2026-06-11T12:15:46.000Z",
+                  "error": {
+                    "message": "Expected input value \"Canaan Turner\", received \"\"."
+                  },
+                  "attachments": [
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/artifacts/playwright-json/payment-form-trace.zip"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "order confirmation displays receipt number",
+          "file": "tests/checkout/order-confirmation.spec.ts",
+          "tests": [
+            {
+              "projectName": "chromium",
+              "status": "passed",
+              "results": [
+                {
+                  "retry": 0,
+                  "status": "passed",
+                  "duration": 9200,
+                  "startTime": "2026-06-11T12:16:04.000Z"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "cart",
+      "file": "tests/cart/persistence.spec.ts",
+      "specs": [
+        {
+          "title": "cart persists after refresh",
+          "file": "tests/cart/persistence.spec.ts",
+          "tests": [
+            {
+              "projectName": "firefox",
+              "status": "passed",
+              "results": [
+                {
+                  "retry": 0,
+                  "status": "failed",
+                  "duration": 10100,
+                  "startTime": "2026-06-11T12:16:14.000Z",
+                  "error": {
+                    "message": "Cart item count reset after reload."
+                  },
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/artifacts/playwright-json/cart-refresh-flake.svg"
+                    }
+                  ]
+                },
+                {
+                  "retry": 1,
+                  "status": "passed",
+                  "duration": 9100,
+                  "startTime": "2026-06-11T12:16:25.000Z"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "startTime": "2026-06-11T12:15:00.000Z",
+    "duration": 95000,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 1
+  }
+}

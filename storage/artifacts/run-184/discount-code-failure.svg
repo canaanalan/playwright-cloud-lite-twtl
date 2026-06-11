@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="title desc">
+  <title id="title">Discount code failure screenshot placeholder</title>
+  <desc id="desc">A local placeholder artifact for the failed discount code Playwright test.</desc>
+  <rect width="960" height="540" fill="#020617"/>
+  <rect x="48" y="44" width="864" height="452" rx="10" fill="#0f172a" stroke="#334155"/>
+  <text x="82" y="104" fill="#e2e8f0" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">Checkout summary</text>
+  <rect x="82" y="142" width="360" height="42" rx="6" fill="#1e293b"/>
+  <text x="104" y="170" fill="#94a3b8" font-family="Arial, Helvetica, sans-serif" font-size="16">Promo code: SAVE10</text>
+  <rect x="82" y="210" width="796" height="1" fill="#334155"/>
+  <text x="82" y="260" fill="#cbd5e1" font-family="Arial, Helvetica, sans-serif" font-size="20">Expected total</text>
+  <text x="782" y="260" fill="#34d399" font-family="Arial, Helvetica, sans-serif" font-size="20">$72.00</text>
+  <text x="82" y="306" fill="#cbd5e1" font-family="Arial, Helvetica, sans-serif" font-size="20">Actual total</text>
+  <text x="782" y="306" fill="#fb7185" font-family="Arial, Helvetica, sans-serif" font-size="20">$80.00</text>
+  <rect x="82" y="352" width="796" height="64" rx="8" fill="#450a0a" stroke="#be123c"/>
+  <text x="108" y="392" fill="#fecdd3" font-family="Arial, Helvetica, sans-serif" font-size="18">Assertion failed: discount was not applied before payment.</text>
+</svg>

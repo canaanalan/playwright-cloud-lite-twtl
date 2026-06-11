@@ -1,0 +1,69 @@
+{
+  "id": "sample-upload-run-185",
+  "projectName": "checkout-service-playwright",
+  "status": "FAILED",
+  "branch": "feature/payment-hardening",
+  "commitSha": "9ab13ef",
+  "ciProvider": "GitHub Actions",
+  "ciRunUrl": "https://github.com/example/checkout-service/actions/runs/185",
+  "startedAt": "2026-06-11T12:15:00.000Z",
+  "endedAt": "2026-06-11T12:16:35.000Z",
+  "durationMs": 95000,
+  "passedCount": 18,
+  "failedCount": 1,
+  "skippedCount": 0,
+  "retriedCount": 1,
+  "tests": [
+    {
+      "title": "payment form preserves cardholder name after validation error",
+      "file": "tests/checkout/payment-form.spec.ts",
+      "browserName": "chromium",
+      "status": "FAILED",
+      "durationMs": 31200,
+      "retryCount": 1,
+      "errorMessage": "Expected cardholder name input to retain value after validation error.",
+      "attempts": [
+        {
+          "attemptIndex": 0,
+          "status": "FAILED",
+          "durationMs": 16400,
+          "errorMessage": "Cardholder name input was cleared after validation error.",
+          "startedAt": "2026-06-11T12:15:28.000Z"
+        },
+        {
+          "attemptIndex": 1,
+          "status": "FAILED",
+          "durationMs": 14800,
+          "errorMessage": "Expected input value \"Canaan Turner\", received \"\".",
+          "startedAt": "2026-06-11T12:15:46.000Z"
+        }
+      ],
+      "artifacts": [
+        {
+          "type": "SCREENSHOT",
+          "label": "Failure screenshot",
+          "path": "/artifacts/run-185/payment-form-failure.svg"
+        },
+        {
+          "type": "TRACE",
+          "label": "Playwright trace",
+          "path": "/artifacts/run-185/payment-form-trace.zip"
+        }
+      ]
+    },
+    {
+      "title": "order confirmation displays receipt number",
+      "file": "tests/checkout/order-confirmation.spec.ts",
+      "browserName": "chromium",
+      "status": "PASSED",
+      "durationMs": 9200
+    },
+    {
+      "title": "guest checkout allows shipping method changes",
+      "file": "tests/checkout/shipping-method.spec.ts",
+      "browserName": "webkit",
+      "status": "PASSED",
+      "durationMs": 11800
+    }
+  ]
+}

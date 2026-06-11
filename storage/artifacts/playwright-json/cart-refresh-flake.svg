@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="title desc">
+  <title id="title">Playwright JSON cart flake screenshot placeholder</title>
+  <desc id="desc">A local placeholder screenshot from a flaky raw Playwright JSON fixture.</desc>
+  <rect width="960" height="540" fill="#020617"/>
+  <rect x="60" y="56" width="840" height="428" rx="10" fill="#0f172a" stroke="#334155"/>
+  <text x="96" y="118" fill="#e2e8f0" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700">Flaky Candidate</text>
+  <rect x="96" y="166" width="768" height="72" rx="8" fill="#451a03" stroke="#f59e0b"/>
+  <text x="122" y="210" fill="#fde68a" font-family="Arial, Helvetica, sans-serif" font-size="18">First attempt failed, retry passed.</text>
+</svg>

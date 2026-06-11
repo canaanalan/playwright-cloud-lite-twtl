@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="title desc">
+  <title id="title">Cart refresh flaky screenshot placeholder</title>
+  <desc id="desc">A local placeholder artifact for a flaky cart persistence test.</desc>
+  <rect width="960" height="540" fill="#020617"/>
+  <rect x="56" y="52" width="848" height="436" rx="10" fill="#0f172a" stroke="#334155"/>
+  <text x="92" y="112" fill="#e2e8f0" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">Cart</text>
+  <rect x="92" y="150" width="776" height="92" rx="8" fill="#1e293b"/>
+  <text x="124" y="202" fill="#cbd5e1" font-family="Arial, Helvetica, sans-serif" font-size="18">Wireless Keyboard</text>
+  <text x="782" y="202" fill="#cbd5e1" font-family="Arial, Helvetica, sans-serif" font-size="18">Qty: 1</text>
+  <rect x="92" y="278" width="776" height="76" rx="8" fill="#451a03" stroke="#f59e0b"/>
+  <text x="124" y="324" fill="#fde68a" font-family="Arial, Helvetica, sans-serif" font-size="18">Retry signal: cart item count reset after reload.</text>
+</svg>

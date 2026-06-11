@@ -1,0 +1,41 @@
+{
+  "name": "playwright-cloud-lite-twtl",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:reset-demo": "tsx scripts/clear-runs.ts && npm run db:seed && npm run upload:sample && PLAYWRIGHT_CLOUD_LITE_RUN_ID=sample-playwright-json-001 npm run upload:playwright -- fixtures/playwright-json-report.sample.json",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio",
+    "test:demo": "playwright test",
+    "test:demo:json": "playwright test --reporter=json > playwright-results.json",
+    "upload": "tsx scripts/upload-run.ts",
+    "upload:playwright": "tsx scripts/upload-playwright.ts",
+    "upload:sample": "tsx scripts/upload-run.ts fixtures/playwright-run.sample.json",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "dotenv": "^17.4.2",
+    "next": "16.2.9",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.9",
+    "prisma": "^6.19.3",
+    "tailwindcss": "^4",
+    "tsx": "^4.22.4",
+    "typescript": "^5"
+  }
+}
