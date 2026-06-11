@@ -4,6 +4,10 @@ A lightweight Playwright test observability dashboard for debugging runs, retrie
 
 This is a work in progress, but the current MVP already supports the core loop: ingest test results, store them as structured run data, and make failures easier to investigate.
 
+<img width="500" height="250" alt="Screenshot 2026-06-11 at 8 07 30 AM" src="https://github.com/user-attachments/assets/8d235edf-88e6-4e8f-b3a8-9b905e0eef05" />
+
+<img width="500" height="250" alt="Screenshot 2026-06-11 at 8 07 21 AM" src="https://github.com/user-attachments/assets/c32b65ec-81dc-4914-8f86-274f3fa638ab" />
+
 ## Why I Built This
 
 Most QA portfolio projects stop at writing tests. I wanted this one to show the layer around the tests: the reporting, reliability signals, CI feedback loop, and debugging workflow that help a team understand what happened when a run fails.
