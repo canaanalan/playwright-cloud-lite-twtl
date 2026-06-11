@@ -10,9 +10,9 @@ This is a work in progress, but the current MVP already supports the core loop: 
 
 ## Why I Built This
 
-Most QA portfolio projects stop at writing tests. I wanted this one to show the layer around the tests: the reporting, reliability signals, CI feedback loop, and debugging workflow that help a team understand what happened when a run fails.
+Mostly for fun :D I like PLaywright better but CYpress Cloud is my favorite part of Cypress, so I wanted to try to build my own pretty dashboard for Playwright. My plan is to bake into a live server so it can actually be used by anyone. 
 
-This project is intentionally small. It is not trying to be Cypress Cloud or a full enterprise test platform. It is a practical "cloud lite" slice that demonstrates QA infrastructure thinking without burying the idea under unnecessary platform complexity.
+It is nowhere near the full enterprise test platform YET. It is a practical "cloud lite" slice FOR NOW.
 
 ## What It Does
 
@@ -44,8 +44,6 @@ Playwright test run
   -> dashboard and run detail pages
   -> /api/artifacts/:artifactId
 ```
-
-The app starts with a single Next.js codebase because the goal is to validate the QA observability workflow first. The boundaries are still clear enough to move pieces later: SQLite could become Postgres, local artifact storage could become S3/R2, and the upload API could become a separate ingestion service.
 
 ## Data Model
 
