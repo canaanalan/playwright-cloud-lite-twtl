@@ -11,6 +11,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "test:demo": "playwright test",
+    "test:demo:failure": "INCLUDE_FAILURE_TESTS=1 playwright test tests/artifact-upload.failure.spec.ts",
+    "test:demo:failure:json": "INCLUDE_FAILURE_TESTS=1 playwright test tests/artifact-upload.failure.spec.ts --reporter=json > playwright-failure-results.json || test -f playwright-failure-results.json",
     "test:demo:json": "playwright test --reporter=json > playwright-results.json",
     "upload": "tsx scripts/upload-run.ts",
     "upload:playwright": "tsx scripts/upload-playwright.ts",

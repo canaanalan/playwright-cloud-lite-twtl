@@ -15,6 +15,7 @@
 /playwright-report
 /test-results
 /playwright-results.json
+/playwright-failure-results.json
 
 # next.js
 /.next/
@@ -39,6 +40,9 @@ yarn-error.log*
 # local database
 /prisma/dev.db
 /prisma/dev.db-journal
+
+# local uploaded artifacts
+/storage/artifacts/uploads
 
 # vercel
 .vercel

@@ -2,6 +2,9 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests",
+  testIgnore: process.env.INCLUDE_FAILURE_TESTS
+    ? []
+    : ["**/*.failure.spec.ts"],
   timeout: 30_000,
   expect: {
     timeout: 5_000,

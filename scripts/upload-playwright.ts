@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { normalizePlaywrightJsonReport } from "@/lib/normalize-playwright-json";
+import { materializeArtifacts } from "./materialize-artifacts";
 
 const DEFAULT_ENDPOINT = "http://localhost:3017/api/runs/upload";
 const endpoint =
@@ -15,7 +16,7 @@ async function main() {
   }
 
   const rawReport = JSON.parse(await readFile(resolve(reportPath), "utf8"));
-  const payload = normalizePlaywrightJsonReport(rawReport, {
+  const normalizedPayload = normalizePlaywrightJsonReport(rawReport, {
     runId: process.env.PLAYWRIGHT_CLOUD_LITE_RUN_ID,
     projectName: process.env.PLAYWRIGHT_CLOUD_LITE_PROJECT_NAME,
     branch: process.env.GITHUB_REF_NAME,
@@ -28,6 +29,8 @@ async function main() {
         ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
         : undefined,
   });
+  const { payload, copiedCount, missingCount } =
+    await materializeArtifacts(normalizedPayload);
 
   const response = await fetch(endpoint, {
     method: "POST",
@@ -51,6 +54,10 @@ async function main() {
   console.log("Uploaded Playwright JSON report", {
     endpoint,
     reportPath,
+    artifacts: {
+      copied: copiedCount,
+      missing: missingCount,
+    },
     responseBody,
   });
 }

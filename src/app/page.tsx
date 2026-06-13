@@ -75,18 +75,21 @@ export default async function Home() {
             </h1>
           </div>
           <nav className="space-y-1 text-sm font-medium">
-            <a className="block rounded-md bg-white/[0.06] px-3 py-2 text-slate-100 ring-1 ring-white/10">
+            <a
+              href="#recent-runs"
+              className="block rounded-md bg-white/[0.06] px-3 py-2 text-slate-100 ring-1 ring-white/10"
+            >
               Runs
             </a>
-            <a className="block rounded-md px-3 py-2 text-slate-500">
-              Failures
-            </a>
-            <a className="block rounded-md px-3 py-2 text-slate-500">
-              Flaky
-            </a>
-            <a className="block rounded-md px-3 py-2 text-slate-500">
-              Artifacts
-            </a>
+            <span className="block rounded-md px-3 py-2 text-slate-600">
+              Failures <span className="text-xs text-slate-700">soon</span>
+            </span>
+            <span className="block rounded-md px-3 py-2 text-slate-600">
+              Flaky <span className="text-xs text-slate-700">soon</span>
+            </span>
+            <span className="block rounded-md px-3 py-2 text-slate-600">
+              Artifacts <span className="text-xs text-slate-700">soon</span>
+            </span>
           </nav>
         </aside>
 
@@ -116,7 +119,10 @@ export default async function Home() {
             <MetricCard label="Flaky candidates" value={flakyTests.toString()} />
           </div>
 
-          <div className="overflow-hidden rounded-lg border border-white/10 bg-slate-950/60 shadow-sm">
+          <div
+            id="recent-runs"
+            className="overflow-hidden rounded-lg border border-white/10 bg-slate-950/60 shadow-sm"
+          >
             <div className="border-b border-white/10 px-5 py-4">
               <h3 className="text-base font-semibold">Recent runs</h3>
             </div>
@@ -132,7 +138,7 @@ export default async function Home() {
               </div>
             ) : (
               <div>
-                <div className="hidden grid-cols-[minmax(220px,1.6fr)_110px_minmax(160px,1fr)_minmax(230px,1.2fr)_80px_100px_100px] gap-4 border-b border-white/10 bg-white/[0.03] px-5 py-3 text-xs font-semibold uppercase text-slate-500 xl:grid">
+                <div className="hidden grid-cols-[minmax(220px,1.6fr)_110px_minmax(160px,1fr)_minmax(230px,1.2fr)_80px_100px_100px_80px] gap-4 border-b border-white/10 bg-white/[0.03] px-5 py-3 text-xs font-semibold uppercase text-slate-500 xl:grid">
                   <span>Run</span>
                   <span>Status</span>
                   <span>Branch</span>
@@ -140,21 +146,22 @@ export default async function Home() {
                   <span>Retries</span>
                   <span>Duration</span>
                   <span>Created</span>
+                  <span>Details</span>
                 </div>
                 <div className="divide-y divide-white/10">
                   {runs.map((run) => (
-                    <article
+                    <Link
                       key={run.id}
-                      className="grid gap-4 px-5 py-4 hover:bg-white/[0.03] xl:grid-cols-[minmax(220px,1.6fr)_110px_minmax(160px,1fr)_minmax(230px,1.2fr)_80px_100px_100px] xl:items-center"
+                      href={`/runs/${run.id}`}
+                      className="grid cursor-pointer gap-4 px-5 py-4 transition-colors hover:bg-white/[0.04] focus:outline-none focus-visible:bg-white/[0.05] focus-visible:ring-2 focus-visible:ring-sky-500/50 xl:grid-cols-[minmax(220px,1.6fr)_110px_minmax(160px,1fr)_minmax(230px,1.2fr)_80px_100px_100px_80px] xl:items-center"
                     >
                       <div className="min-w-0">
-                        <Link
-                          href={`/runs/${run.id}`}
-                          className="block truncate font-medium text-slate-100 hover:text-sky-300"
+                        <span
+                          className="block truncate font-medium text-slate-100"
                           title={run.projectName}
                         >
                           {run.projectName}
-                        </Link>
+                        </span>
                         <div className="mt-1 flex min-w-0 gap-2 text-xs text-slate-500">
                           <span className="truncate">
                             {run.ciProvider ?? "Local"}
@@ -207,7 +214,10 @@ export default async function Home() {
                         value={formatRelativeTime(run.createdAt)}
                         muted
                       />
-                    </article>
+                      <span className="text-sm font-medium text-sky-300">
+                        Open
+                      </span>
+                    </Link>
                   ))}
                 </div>
               </div>

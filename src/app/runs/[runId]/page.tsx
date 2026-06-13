@@ -42,6 +42,10 @@ function shortSha(commitSha: string | null) {
   return commitSha?.slice(0, 7) ?? "local";
 }
 
+function cleanErrorMessage(message: string) {
+  return message.replace(/\x1B\[[0-?]*[ -/]*[@-~]/g, "");
+}
+
 export default async function RunDetailPage({ params }: RunDetailPageProps) {
   const { runId } = await params;
   const run = await prisma.run.findUnique({
@@ -170,8 +174,8 @@ export default async function RunDetailPage({ params }: RunDetailPageProps) {
                   </div>
 
                   {test.errorMessage ? (
-                    <pre className="mt-4 overflow-x-auto rounded-md border border-rose-500/20 bg-rose-950/20 p-3 text-xs leading-5 text-rose-200">
-                      {test.errorMessage}
+                    <pre className="mt-4 max-w-full overflow-x-auto whitespace-pre rounded-md border border-rose-500/20 bg-rose-950/20 p-3 text-xs leading-5 text-rose-200">
+                      {cleanErrorMessage(test.errorMessage)}
                     </pre>
                   ) : null}
 
@@ -201,9 +205,9 @@ export default async function RunDetailPage({ params }: RunDetailPageProps) {
                                 {formatDuration(attempt.durationMs)}
                               </p>
                               {attempt.errorMessage ? (
-                                <p className="mt-2 text-xs leading-5 text-slate-400">
-                                  {attempt.errorMessage}
-                                </p>
+                                <pre className="mt-2 max-h-48 max-w-full overflow-auto whitespace-pre-wrap break-words rounded-md bg-slate-900/80 p-3 text-xs leading-5 text-slate-400">
+                                  {cleanErrorMessage(attempt.errorMessage)}
+                                </pre>
                               ) : null}
                             </div>
                           ))
