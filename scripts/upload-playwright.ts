@@ -29,7 +29,7 @@ async function main() {
         ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
         : undefined,
   });
-  const { payload, copiedCount, missingCount } =
+  const { payload, copiedCount, missingCount, missingArtifacts } =
     await materializeArtifacts(normalizedPayload);
 
   const response = await fetch(endpoint, {
@@ -51,18 +51,57 @@ async function main() {
     process.exit(1);
   }
 
-  console.log("Uploaded Playwright JSON report", {
-    endpoint,
-    reportPath,
-    artifacts: {
-      copied: copiedCount,
-      missing: missingCount,
-    },
-    responseBody,
-  });
+  const runId = getStringField(responseBody, "runId") ?? payload.id;
+  const runUrl = runId ? new URL(`/runs/${runId}`, endpoint).toString() : null;
+
+  console.log("Uploaded Playwright JSON report");
+  console.log(`  Endpoint: ${endpoint}`);
+  console.log(`  Source: ${reportPath}`);
+  console.log(`  Run: ${runId ?? "unknown"}`);
+  console.log(`  Status: ${getStringField(responseBody, "status") ?? payload.status}`);
+  console.log(`  Tests: ${getNumberField(responseBody, "testCount") ?? payload.tests?.length ?? 0}`);
+  console.log(`  Artifacts copied: ${copiedCount}`);
+  console.log(`  Artifacts missing: ${missingCount}`);
+
+  if (runUrl) {
+    console.log(`  View: ${runUrl}`);
+  }
+
+  if (missingArtifacts.length > 0) {
+    console.log("  Missing artifact files:");
+    for (const artifactPath of missingArtifacts.slice(0, 5)) {
+      console.log(`    - ${artifactPath}`);
+    }
+
+    if (missingArtifacts.length > 5) {
+      console.log(`    ...and ${missingArtifacts.length - 5} more`);
+    }
+  }
 }
 
 main().catch((error) => {
   console.error(error);
   process.exit(1);
 });
+
+function getStringField(input: unknown, field: string) {
+  if (!isRecord(input)) {
+    return null;
+  }
+
+  const value = input[field];
+  return typeof value === "string" ? value : null;
+}
+
+function getNumberField(input: unknown, field: string) {
+  if (!isRecord(input)) {
+    return null;
+  }
+
+  const value = input[field];
+  return typeof value === "number" ? value : null;
+}
+
+function isRecord(input: unknown): input is Record<string, unknown> {
+  return typeof input === "object" && input !== null && !Array.isArray(input);
+}

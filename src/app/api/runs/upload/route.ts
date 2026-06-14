@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { PLAYWRIGHT_REPORTER_NOTE } from "@/lib/playwright-compatibility";
 import { prisma } from "@/lib/prisma";
 import { validateUploadRunPayload } from "@/lib/run-payload";
 
@@ -9,7 +10,10 @@ export async function POST(request: Request) {
     body = await request.json();
   } catch {
     return NextResponse.json(
-      { error: "Request body must be valid JSON." },
+      {
+        error: "Request body must be valid JSON.",
+        hint: "Generate Playwright JSON with: npx playwright test --reporter=json > playwright-results.json",
+      },
       { status: 400 },
     );
   }
@@ -18,7 +22,11 @@ export async function POST(request: Request) {
 
   if (!validation.ok) {
     return NextResponse.json(
-      { error: "Invalid run payload.", details: validation.errors },
+      {
+        error: "Invalid run payload.",
+        details: validation.errors,
+        compatibility: PLAYWRIGHT_REPORTER_NOTE,
+      },
       { status: 400 },
     );
   }
@@ -99,6 +107,7 @@ export async function POST(request: Request) {
         projectName: run.projectName,
         status: run.status,
         testCount: run.tests.length,
+        compatibility: PLAYWRIGHT_REPORTER_NOTE,
       },
       { status: 201 },
     );

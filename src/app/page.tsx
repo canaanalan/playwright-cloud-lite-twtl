@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { RunStatus } from "@prisma/client";
+import { PLAYWRIGHT_REPORTER_VERSION } from "@/lib/playwright-compatibility";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -81,16 +82,11 @@ export default async function Home() {
             >
               Runs
             </a>
-            <span className="block rounded-md px-3 py-2 text-slate-600">
-              Failures <span className="text-xs text-slate-700">soon</span>
-            </span>
-            <span className="block rounded-md px-3 py-2 text-slate-600">
-              Flaky <span className="text-xs text-slate-700">soon</span>
-            </span>
-            <span className="block rounded-md px-3 py-2 text-slate-600">
-              Artifacts <span className="text-xs text-slate-700">soon</span>
-            </span>
           </nav>
+          <p className="mt-6 text-xs leading-5 text-slate-600">
+            Failures, flaky signals, retries, and artifacts are triaged inside
+            each run detail.
+          </p>
         </aside>
 
         <section className="min-w-0 flex-1">
@@ -105,6 +101,9 @@ export default async function Home() {
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
                 Recent Playwright runs with CI context, failure counts, retries,
                 and early flaky-test signals.
+              </p>
+              <p className="mt-2 text-xs text-slate-600">
+                Reporter target: {PLAYWRIGHT_REPORTER_VERSION}
               </p>
             </div>
             <div className="rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-slate-300">
@@ -132,9 +131,15 @@ export default async function Home() {
                 <p className="text-sm font-medium text-slate-200">
                   No runs found.
                 </p>
-                <p className="mt-1 text-sm text-slate-500">
-                  Run npm run db:seed to load the sample Playwright data.
+                <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+                  Seed the demo data or upload a Playwright JSON report to start
+                  exploring run history, failures, retries, and artifacts.
                 </p>
+                <div className="mx-auto mt-4 grid max-w-lg gap-2 rounded-md border border-white/10 bg-slate-950 p-3 text-left font-mono text-xs text-slate-400">
+                  <span>npm run db:seed</span>
+                  <span>npm run test:demo:json</span>
+                  <span>npm run upload:playwright -- playwright-results.json</span>
+                </div>
               </div>
             ) : (
               <div>

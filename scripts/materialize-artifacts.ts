@@ -9,6 +9,7 @@ type MaterializeResult = {
   payload: UploadRunPayload;
   copiedCount: number;
   missingCount: number;
+  missingArtifacts: string[];
 };
 
 export async function materializeArtifacts(
@@ -16,6 +17,7 @@ export async function materializeArtifacts(
 ): Promise<MaterializeResult> {
   let copiedCount = 0;
   let missingCount = 0;
+  const missingArtifacts: string[] = [];
   const runStorageName = sanitizePathSegment(
     payload.id ?? `${payload.projectName}-${Date.now()}`,
   );
@@ -30,6 +32,7 @@ export async function materializeArtifacts(
 
       if (!(await isFile(sourcePath))) {
         missingCount += 1;
+        missingArtifacts.push(artifact.path);
         continue;
       }
 
@@ -52,6 +55,7 @@ export async function materializeArtifacts(
     payload,
     copiedCount,
     missingCount,
+    missingArtifacts,
   };
 }
 

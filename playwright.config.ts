@@ -1,5 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3017";
+const shouldStartLocalServer =
+  baseURL.includes("localhost") || baseURL.includes("127.0.0.1");
+
 export default defineConfig({
   testDir: "./tests",
   testIgnore: process.env.INCLUDE_FAILURE_TESTS
@@ -9,8 +13,16 @@ export default defineConfig({
   expect: {
     timeout: 5_000,
   },
+  webServer: shouldStartLocalServer
+    ? {
+        command: "npm run dev -- --port 3017",
+        reuseExistingServer: !process.env.CI,
+        timeout: 120_000,
+        url: baseURL,
+      }
+    : undefined,
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3017",
+    baseURL,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },

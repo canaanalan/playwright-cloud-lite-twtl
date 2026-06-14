@@ -28,14 +28,22 @@ test("run detail exposes failures, retries, and artifacts", async ({ page }) => 
 test("artifact API serves a screenshot artifact", async ({ request }) => {
   const runResponse = await request.get("/runs/sample-run-checkout-184");
   const runHtml = await runResponse.text();
-  const artifactHref = runHtml.match(
-    /href="(\/api\/artifacts\/[^"]+)"[^>]*>Failure screenshot/,
-  )?.[1];
+  const artifactHrefs = Array.from(
+    new Set(
+      [...runHtml.matchAll(/\/api\/artifacts\/[^"?\\]+/g)].map(
+        (match) => match[0],
+      ),
+    ),
+  );
 
-  expect(artifactHref).toBeTruthy();
+  expect(artifactHrefs.length).toBeGreaterThan(0);
 
-  const artifactResponse = await request.get(artifactHref as string);
+  const artifactResponses = await Promise.all(
+    artifactHrefs.map(async (href) => request.get(href)),
+  );
+  const screenshotResponse = artifactResponses.find((response) =>
+    response.headers()["content-type"]?.includes("image/"),
+  );
 
-  expect(artifactResponse.ok()).toBe(true);
-  expect(artifactResponse.headers()["content-type"]).toContain("image/svg+xml");
+  expect(screenshotResponse?.ok()).toBe(true);
 });

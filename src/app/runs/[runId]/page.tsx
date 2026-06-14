@@ -1,6 +1,11 @@
+import { stat } from "node:fs/promises";
+import { basename, extname } from "node:path";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArtifactType, TestStatus } from "@prisma/client";
+import { ArtifactType, RunStatus, TestStatus } from "@prisma/client";
+import { getArtifactStoragePath } from "@/lib/artifacts";
+import { PLAYWRIGHT_REPORTER_VERSION } from "@/lib/playwright-compatibility";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -13,11 +18,26 @@ const testStatusStyles: Record<TestStatus, string> = {
   TIMED_OUT: "border-orange-500/30 bg-orange-500/10 text-orange-300",
 };
 
+const runStatusStyles: Record<RunStatus, string> = {
+  PASSED: "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
+  FAILED: "border-rose-500/30 bg-rose-500/10 text-rose-300",
+  FLAKY: "border-amber-500/30 bg-amber-500/10 text-amber-300",
+  TIMED_OUT: "border-orange-500/30 bg-orange-500/10 text-orange-300",
+  INTERRUPTED: "border-slate-500/30 bg-slate-500/10 text-slate-300",
+};
+
 const artifactLabels: Record<ArtifactType, string> = {
   SCREENSHOT: "Screenshot",
   VIDEO: "Video",
   TRACE: "Trace",
   LOG: "Log",
+};
+
+const artifactActionLabels: Record<ArtifactType, string> = {
+  SCREENSHOT: "Open image",
+  VIDEO: "Open video",
+  TRACE: "Download trace",
+  LOG: "Open log",
 };
 
 type RunDetailPageProps = {
@@ -44,6 +64,73 @@ function shortSha(commitSha: string | null) {
 
 function cleanErrorMessage(message: string) {
   return message.replace(/\x1B\[[0-?]*[ -/]*[@-~]/g, "");
+}
+
+async function getArtifactFileMeta(path: string) {
+  const storagePath = getArtifactStoragePath(path);
+
+  if (!storagePath) {
+    return {
+      filename: basename(path),
+      extension: extname(path).replace(".", "").toUpperCase(),
+      sizeLabel: null,
+      isMissing: false,
+    };
+  }
+
+  try {
+    const fileStat = await stat(storagePath);
+
+    return {
+      filename: basename(storagePath),
+      extension: extname(storagePath).replace(".", "").toUpperCase(),
+      sizeLabel: formatBytes(fileStat.size),
+      isMissing: false,
+    };
+  } catch {
+    return {
+      filename: basename(storagePath),
+      extension: extname(storagePath).replace(".", "").toUpperCase(),
+      sizeLabel: null,
+      isMissing: true,
+    };
+  }
+}
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
+
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function getDebugPriority({
+  failedCount,
+  flakyCount,
+  missingArtifactCount,
+}: {
+  failedCount: number;
+  flakyCount: number;
+  missingArtifactCount: number;
+}) {
+  if (failedCount > 0 && missingArtifactCount > 0) {
+    return "Fix artifact capture first, then debug failed tests.";
+  }
+
+  if (failedCount > 0) {
+    return "Start with failed tests that have screenshots, traces, or retry history.";
+  }
+
+  if (flakyCount > 0) {
+    return "Review flaky tests and retry patterns before promoting this run.";
+  }
+
+  return "No immediate debugging needed for this run.";
 }
 
 export default async function RunDetailPage({ params }: RunDetailPageProps) {
@@ -85,6 +172,32 @@ export default async function RunDetailPage({ params }: RunDetailPageProps) {
   const priorityTests = run.tests.filter((test) =>
     ["FAILED", "FLAKY", "TIMED_OUT"].includes(test.status),
   );
+  const priorityTestsWithArtifacts = await Promise.all(
+    priorityTests.map(async (test) => ({
+      ...test,
+      artifacts: await Promise.all(
+        test.artifacts.map(async (artifact) => ({
+          ...artifact,
+          fileMeta: await getArtifactFileMeta(artifact.path),
+        })),
+      ),
+    })),
+  );
+  const flakyCount = run.tests.filter((test) => test.isFlaky).length;
+  const missingArtifactCount = priorityTestsWithArtifacts.reduce(
+    (total, test) =>
+      total +
+      test.artifacts.filter((artifact) => artifact.fileMeta.isMissing).length,
+    0,
+  );
+  const testsWithArtifactsCount = run.tests.filter(
+    (test) => test.artifacts.length > 0,
+  ).length;
+  const debugPriority = getDebugPriority({
+    failedCount: run.failedCount,
+    flakyCount,
+    missingArtifactCount,
+  });
   const slowestTests = [...run.tests]
     .sort((a, b) => b.durationMs - a.durationMs)
     .slice(0, 5);
@@ -116,9 +229,14 @@ export default async function RunDetailPage({ params }: RunDetailPageProps) {
                 <span className="rounded-md bg-slate-800 px-2 py-1">
                   {run.ciProvider ?? "Local run"}
                 </span>
+                <span className="rounded-md bg-slate-800 px-2 py-1">
+                  reporter {PLAYWRIGHT_REPORTER_VERSION}
+                </span>
               </div>
             </div>
-            <span className="inline-flex w-fit rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-300">
+            <span
+              className={`inline-flex w-fit rounded-md border px-3 py-2 text-sm font-semibold ${runStatusStyles[run.status]}`}
+            >
               {run.status.replace("_", " ")}
             </span>
           </div>
@@ -130,6 +248,34 @@ export default async function RunDetailPage({ params }: RunDetailPageProps) {
           <MetricCard label="Skipped" value={run.skippedCount.toString()} />
           <MetricCard label="Retries" value={run.retriedCount.toString()} />
           <MetricCard label="Duration" value={formatDuration(run.durationMs)} />
+        </section>
+
+        <section className="mb-6 rounded-lg border border-slate-800 bg-slate-900 p-5 shadow-sm">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p className="text-sm font-medium text-slate-500">
+                Debug priority
+              </p>
+              <h2 className="mt-1 text-xl font-semibold tracking-tight">
+                {debugPriority}
+              </h2>
+            </div>
+            <div className="grid gap-2 text-sm text-slate-400 sm:grid-cols-3 lg:min-w-[460px]">
+              <DebugSignal label="Priority tests" value={priorityTests.length} />
+              <DebugSignal label="Flaky signals" value={flakyCount} />
+              <DebugSignal
+                label="Tests with artifacts"
+                value={testsWithArtifactsCount}
+              />
+            </div>
+          </div>
+          {missingArtifactCount > 0 ? (
+            <p className="mt-4 rounded-md border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">
+              {missingArtifactCount} artifact file
+              {missingArtifactCount === 1 ? "" : "s"} missing from local
+              storage.
+            </p>
+          ) : null}
         </section>
 
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
@@ -144,12 +290,17 @@ export default async function RunDetailPage({ params }: RunDetailPageProps) {
               </p>
             </div>
 
-            {priorityTests.length === 0 ? (
+            {run.tests.length === 0 ? (
+              <div className="rounded-lg border border-slate-800 bg-slate-900 p-5 text-sm text-slate-400">
+                No test cases were recorded for this run. The run-level summary
+                was uploaded, but the payload did not include per-test results.
+              </div>
+            ) : priorityTests.length === 0 ? (
               <div className="rounded-lg border border-slate-800 bg-slate-900 p-5 text-sm text-slate-400">
                 No failed or flaky tests in this run.
               </div>
             ) : (
-              priorityTests.map((test) => (
+              priorityTestsWithArtifacts.map((test) => (
                 <article
                   key={test.id}
                   className="rounded-lg border border-slate-800 bg-slate-900 p-5 shadow-sm"
@@ -226,16 +377,10 @@ export default async function RunDetailPage({ params }: RunDetailPageProps) {
                           </p>
                         ) : (
                           test.artifacts.map((artifact) => (
-                            <a
+                            <ArtifactCard
                               key={artifact.id}
-                              href={`/api/artifacts/${artifact.id}`}
-                              className="block rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-sky-300 hover:border-sky-500/40 hover:text-sky-200"
-                            >
-                              {artifact.label ?? artifactLabels[artifact.type]}
-                              <span className="mt-1 block font-mono text-xs text-slate-500">
-                                {artifact.path}
-                              </span>
-                            </a>
+                              artifact={artifact}
+                            />
                           ))
                         )}
                       </div>
@@ -250,24 +395,30 @@ export default async function RunDetailPage({ params }: RunDetailPageProps) {
             <section className="rounded-lg border border-slate-800 bg-slate-900 p-5 shadow-sm">
               <h2 className="text-base font-semibold">Slowest tests</h2>
               <div className="mt-4 space-y-3">
-                {slowestTests.map((test) => (
-                  <div
-                    key={test.id}
-                    className="border-b border-slate-800 pb-3 last:border-b-0 last:pb-0"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <p className="text-sm font-medium text-slate-200">
-                        {test.title}
+                {slowestTests.length === 0 ? (
+                  <p className="text-sm text-slate-500">
+                    No per-test duration data recorded.
+                  </p>
+                ) : (
+                  slowestTests.map((test) => (
+                    <div
+                      key={test.id}
+                      className="border-b border-slate-800 pb-3 last:border-b-0 last:pb-0"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="text-sm font-medium text-slate-200">
+                          {test.title}
+                        </p>
+                        <span className="shrink-0 text-xs text-slate-500">
+                          {formatDuration(test.durationMs)}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {test.browserName ?? "unknown browser"}
                       </p>
-                      <span className="shrink-0 text-xs text-slate-500">
-                        {formatDuration(test.durationMs)}
-                      </span>
                     </div>
-                    <p className="mt-1 text-xs text-slate-500">
-                      {test.browserName ?? "unknown browser"}
-                    </p>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </section>
 
@@ -305,6 +456,15 @@ function MetricCard({ label, value }: { label: string; value: string }) {
   );
 }
 
+function DebugSignal({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-md border border-slate-800 bg-slate-950 px-3 py-2">
+      <p className="text-xs font-medium text-slate-500">{label}</p>
+      <p className="mt-1 text-lg font-semibold text-slate-100">{value}</p>
+    </div>
+  );
+}
+
 function StatusBadge({ status }: { status: TestStatus }) {
   return (
     <span
@@ -312,6 +472,72 @@ function StatusBadge({ status }: { status: TestStatus }) {
     >
       {status.replace("_", " ")}
     </span>
+  );
+}
+
+function ArtifactCard({
+  artifact,
+}: {
+  artifact: {
+    id: string;
+    type: ArtifactType;
+    path: string;
+    label: string | null;
+    fileMeta: {
+      filename: string;
+      extension: string;
+      sizeLabel: string | null;
+      isMissing: boolean;
+    };
+  };
+}) {
+  const href = `/api/artifacts/${artifact.id}`;
+  const title = artifact.label ?? artifactLabels[artifact.type];
+
+  return (
+    <a
+      href={href}
+      className="block overflow-hidden rounded-md border border-slate-800 bg-slate-950 text-sm transition hover:border-sky-500/40 hover:bg-slate-950/80"
+    >
+      {artifact.type === ArtifactType.SCREENSHOT && !artifact.fileMeta.isMissing ? (
+        <Image
+          src={href}
+          alt=""
+          width={640}
+          height={360}
+          unoptimized
+          className="h-36 w-full border-b border-slate-800 bg-slate-900 object-cover object-top"
+        />
+      ) : null}
+
+      <div className="px-3 py-2">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="font-medium text-sky-300">{title}</p>
+            <p className="mt-1 break-all font-mono text-xs text-slate-500">
+              {artifact.fileMeta.filename || artifact.path}
+            </p>
+          </div>
+          <span className="shrink-0 rounded-md bg-slate-800 px-2 py-1 text-xs font-semibold text-slate-400">
+            {artifact.fileMeta.extension || artifact.type}
+          </span>
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+          <span className="font-medium text-slate-300">
+            {artifactActionLabels[artifact.type]}
+          </span>
+          {artifact.fileMeta.sizeLabel ? (
+            <span className="text-slate-600">· {artifact.fileMeta.sizeLabel}</span>
+          ) : null}
+          {artifact.fileMeta.isMissing ? (
+            <span className="rounded-md bg-rose-500/10 px-2 py-1 font-medium text-rose-300 ring-1 ring-rose-500/20">
+              missing on disk
+            </span>
+          ) : null}
+        </div>
+      </div>
+    </a>
   );
 }
 
